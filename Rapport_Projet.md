@@ -28,13 +28,13 @@ Nous avons utilisé les outils et logiciels suivants pour mener à bien ce proje
 
 Nous avons développé notre projet en trois étapes principales, chacune représentée par un schéma EA :
 
-    1. **Premier Schéma :** Une première ébauche réalisée rapidement pour visualiser la structure de la base de données.
+3. **Premier Schéma :** Une première ébauche réalisée rapidement pour visualiser la structure de la base de données.
 ![Premier Schéma](premier-schema.png)
 
-    2. **Deuxième Schéma :** Une version plus détaillée et structurée, basée sur le premier schéma et les idées développées par la suite.
+2. **Deuxième Schéma :** Une version plus détaillée et structurée, basée sur le premier schéma et les idées développées par la suite.
 ![Deuxième Schéma](schema-intermediaire.png)
 
-1. **Troisième Schéma :** La version finale optimisée après avoir identifié des problèmes d'optimisation lors de la création des premières requêtes.
+3. **Troisième Schéma :** La version finale optimisée après avoir identifié des problèmes d'optimisation lors de la création des premières requêtes.
 
 ![Troisième Schéma](schema-final.png)
 
