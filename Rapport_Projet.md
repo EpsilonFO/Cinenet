@@ -21,7 +21,7 @@ Nous étions deux à travailler sur ce projet. Nous avons collaboré à toutes l
 ### Outils Utilisés
 
 Nous avons utilisé les outils et logiciels suivants pour mener à bien ce projet :
-- **Développement de la base de données :** MySQL
+- **Développement de la base de données :** PostgreSQL
 - **Peuplement des tables :** Script Python avec la bibliothèque `faker`
 
 ### Évolution des Schémas EA
