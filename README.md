@@ -1,108 +1,151 @@
-# Rapport de Projet : Création d'une Base de Données pour un Réseau Social de Cinéphiles
+# Cinenet - Movie Social Network Database
 
-## Introduction
+## Project Overview
+Cinenet is a comprehensive database system designed for a movie-oriented social network. The project implements a relational database that allows users to interact with movies, share recommendations, follow other users, and discover new films based on community engagement.
 
-Ce rapport présente le projet réalisé dans le cadre de la matière "Base de Données". L'objectif était de concevoir et développer une base de données pour un réseau social destiné aux cinéphiles. Les utilisateurs de ce réseau peuvent se suivre mutuellement, publier des contenus relatifs à des événements cinématographiques, réagir et commenter des publications. Un historique personnalisé est également maintenu pour chaque utilisateur. Ce projet a été réalisé en binôme, et nous avons travaillé ensemble sur toutes les phases, de la conception initiale à l'implémentation finale.
+## Features
+- User account management and profile customization
+- Movie database with detailed information (genre, director, actors, etc.)
+- Rating and review system for films
+- Social networking capabilities (following users, sharing content)
+- Recommendation engine based on user preferences and network activity
+- Analytics on trending films and popular content
 
-## Description du Sujet
+## Database Schema
+The database is structured around the following core entities:
 
-Le sujet du projet consistait à créer une base de données pour un réseau social de cinéphiles avec les fonctionnalités suivantes :
-- Les utilisateurs peuvent se suivre, soit de manière unidirectionnelle, soit de manière bidirectionnelle.
-- Les utilisateurs peuvent poster des publications liées ou non à des événements cinématographiques.
-- Les publications peuvent recevoir des réactions et des commentaires d'autres utilisateurs.
-- Chaque utilisateur dispose d'un historique personnel des publications et des réactions.
+### Main Tables
+- **Users**: Stores user account information and preferences
+- **Movies**: Contains film details including metadata and classification
+- **Ratings**: Records user ratings and reviews for movies
+- **Follows**: Manages social connections between users
+- **Recommendations**: Tracks movie recommendations between users
+- **Genres**: Categorizes films by type
+- **Actors/Directors**: Contains information about film professionals
 
-## Méthodologie
+### Relationships
+- Users can follow multiple other users
+- Users can rate and review multiple movies
+- Users can recommend movies to other users
+- Movies are associated with multiple genres, actors, and directors
 
-### Équipe et Rôles
+## Implementation
+The project is implemented using:
+- SQL for database definition and queries
+- SQL scripts for database initialization
+- Database management system (MySQL/PostgreSQL)
+- Sample data for testing and demonstration
 
-Nous étions deux à travailler sur ce projet. Nous avons collaboré à toutes les étapes du projet, de la conception initiale du schéma entité-association (EA) à l'écriture des requêtes SQL et la mise en œuvre des algorithmes de recommandation.
+## SQL Components
 
-### Outils Utilisés
-
-Nous avons utilisé les outils et logiciels suivants pour mener à bien ce projet :
-- **Développement de la base de données :** PostgreSQL
-- **Peuplement des tables :** Script Python avec la bibliothèque `faker`
-
-### Évolution des Schémas EA
-
-Nous avons développé notre projet en trois étapes principales, chacune représentée par un schéma EA :
-
-1. **Premier Schéma :** Une première ébauche réalisée rapidement pour visualiser la structure de la base de données.
-![Premier Schéma](premier-schema.png)
-
-2. **Deuxième Schéma :** Une version plus détaillée et structurée, basée sur le premier schéma et les idées développées par la suite.
-![Deuxième Schéma](schema-intermediaire.png)
-
-3. **Troisième Schéma :** La version finale optimisée après avoir identifié des problèmes d'optimisation lors de la création des premières requêtes.
-
-![Troisième Schéma](schema-final.png)
-
-### Structure des Tables
-
-Nous avons créé un total de 19 tables. Les tables les plus importantes sont :
-
-- **Publication :** Représente les publications des utilisateurs, y compris le contenu, la date de publication, et les références aux publications parent.
-- **Événement :** Détaille les événements cinématographiques, y compris le nom, la description, la date, le lieu, le prix, et le nombre de places disponibles.
-- **Content :** Inclut des informations sur les films, séries, et autres contenus cinématographiques.
-
-### Peuplement des Tables
-
-Pour peupler nos tables, nous avons utilisé un script Python s'appuyant sur la bibliothèque `faker` pour générer des données fictives. Cela nous a permis de tester et valider les requêtes et algorithmes avec un jeu de données réaliste.
-
-## Requêtes SQL
-
-### Exemple de Requête
-
-Une de nos requêtes avec condition de totalité avec agrégation est la suivante :
-
+### Database Creation
 ```sql
-SELECT u.username
-FROM USER u
-JOIN REACTION r ON u.user_ID = r.user_ID
-GROUP BY u.username
-HAVING COUNT(CASE WHEN r.reaction_ID = 1 THEN 1 ELSE NULL END) = 0;
+CREATE TABLE Users (
+    user_id INT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    date_joined DATE NOT NULL,
+    biography TEXT,
+    profile_picture VARCHAR(255)
+);
+
+CREATE TABLE Movies (
+    movie_id INT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    release_year INT,
+    description TEXT,
+    poster_url VARCHAR(255),
+    avg_rating DECIMAL(3,1)
+);
+
+-- Additional tables and relationships...
 ```
 
-Cette requête permet de sélectionner les utilisateurs qui n'ont jamais réagi avec une certaine réaction.
+### Key Queries
+The database supports various operations through SQL queries, including:
 
-## Algorithmes de Recommandation
-
-Nous avons développé trois algorithmes de recommandation. Un exemple d'algorithme est celui qui calcule la note de recommandation d’un événement en utilisant une notation précise :
-
+1. **User Recommendations**:
 ```sql
-SELECT e.event_ID, e.name,
-    (COUNT(p.user_ID) * 0.4 + 
-    COUNT(DISTINCT h.event_ID) * 0.3 + 
-    IF(e.place_ID IN (SELECT place_ID FROM USER WHERE user_ID = :current_user_id), 0.3, 0)) AS recommendation_score
-FROM EVENT e
-LEFT JOIN PARTICIPATION p ON e.event_ID = p.event_ID
-LEFT JOIN HISTORY h ON e.event_ID = h.event_ID AND h.user_ID = :current_user_id
-WHERE p.user_ID IN (
-    SELECT friend_user_ID 
-    FROM FRIENDS 
-    WHERE user_ID = :current_user_id
-) OR e.place_ID IN (SELECT place_ID FROM USER WHERE user_ID = :current_user_id)
-GROUP BY e.event_ID, e.name
-ORDER BY recommendation_score DESC
-LIMIT 10;
+SELECT m.title, m.release_year, COUNT(*) as rec_count
+FROM Recommendations r
+JOIN Movies m ON r.movie_id = m.movie_id
+WHERE r.recipient_id = [user_id]
+GROUP BY m.movie_id
+ORDER BY rec_count DESC;
 ```
 
-Cet algorithme utilise plusieurs critères pour calculer un score de recommandation pour les événements, en tenant compte des participations des amis de l'utilisateur, de l'historique de l'utilisateur, et du lieu de l'événement.
+2. **Movie Discovery Based on Network**:
+```sql
+SELECT m.title, m.release_year, m.avg_rating
+FROM Ratings r
+JOIN Movies m ON r.movie_id = m.movie_id
+JOIN Follows f ON r.user_id = f.followed_id
+WHERE f.follower_id = [user_id] AND r.rating >= 4
+ORDER BY r.rating_date DESC;
+```
 
-## Résultats et Conclusions
+3. **Trending Movies Analysis**:
+```sql
+SELECT m.title, m.release_year, COUNT(*) as review_count, AVG(r.rating) as avg_recent_rating
+FROM Ratings r
+JOIN Movies m ON r.movie_id = m.movie_id
+WHERE r.rating_date >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
+GROUP BY m.movie_id
+HAVING review_count > 10
+ORDER BY avg_recent_rating DESC;
+```
 
-Ce projet nous a permis de mieux comprendre les enjeux de la conception et de l'optimisation d'un schéma de base de données dans un contexte réel. Nous avons appris à créer des schémas EA détaillés, à peupler des tables avec des données réalistes, à écrire des requêtes SQL complexes avec des contraintes, et à développer des algorithmes de recommandation efficaces.
+## Installation and Usage
 
-### Défis Rencontrés
+### Prerequisites
+- MySQL/PostgreSQL database server
+- SQL client (MySQL Workbench, pgAdmin, etc.)
 
-L'un des principaux défis a été de comprendre et de mettre en œuvre des algorithmes de recommandation pertinents. Cependant, avec de la pratique et de la recherche, nous avons réussi à développer des algorithmes efficaces.
+### Setup Instructions
+1. Clone the repository:
+```bash
+git clone https://github.com/EpsilonOF/Cinenet.git
+```
 
-### Améliorations Futures
+2. Initialize the database:
+```bash
+mysql -u username -p database_name < schema.sql
+```
 
-À l'avenir, nous pourrions envisager d'ajouter des fonctionnalités supplémentaires, telles que la possibilité pour les utilisateurs de noter des films et des événements, et d'intégrer des algorithmes de machine learning pour améliorer les recommandations.
+3. Load sample data (optional):
+```bash
+mysql -u username -p database_name < sample_data.sql
+```
 
-## Conclusion
+4. Test with example queries:
+```bash
+mysql -u username -p database_name < example_queries.sql
+```
 
-En conclusion, ce projet a été une expérience d'apprentissage précieuse qui nous a permis d'acquérir des compétences pratiques en conception de bases de données, en écriture de requêtes SQL et en développement d'algorithmes de recommandation. Nous avons également appris l'importance de l'optimisation et de la structuration efficace des schémas de base de données pour assurer des performances optimales.
+## Database Design Choices
 
+### Normalization
+The database follows third normal form (3NF) to minimize redundancy while maintaining data integrity. This approach:
+- Separates movie metadata (genres, actors, directors) into dedicated tables
+- Creates junction tables for many-to-many relationships
+- Ensures efficient updates and reduces anomalies
+
+### Indexing Strategy
+Strategic indexes are implemented on:
+- Foreign keys to optimize joins
+- Frequently queried columns like movie titles and usernames
+- Timestamp fields for chronological sorting
+
+### Constraints
+Data integrity is maintained through:
+- Primary and foreign key constraints
+- Unique constraints on usernames and emails
+- Check constraints for valid ratings (1-5 scale)
+- Default values for creation timestamps
+
+## Future Enhancements
+- Integration with external movie APIs for automated data population
+- Advanced recommendation algorithms using collaborative filtering
+- Performance optimization for large-scale deployment
+- Data analytics dashboard for trends and user engagement metrics
