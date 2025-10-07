@@ -105,7 +105,7 @@ ORDER BY avg_recent_rating DESC;
 ### Setup Instructions
 1. Clone the repository:
 ```bash
-git clone https://github.com/EpsilonOF/Cinenet.git
+git clone https://github.com/EpsilonFO/Cinenet.git
 ```
 
 2. Initialize the database:
