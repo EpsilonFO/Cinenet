@@ -149,3 +149,5 @@ Data integrity is maintained through:
 - Advanced recommendation algorithms using collaborative filtering
 - Performance optimization for large-scale deployment
 - Data analytics dashboard for trends and user engagement metrics
+
+![Final schema](schema-final.png)
